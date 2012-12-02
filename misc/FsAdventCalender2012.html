@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+
+<body>
+
+<div id="title">F# + ExcelDna + R.NET</div>
+
+<h1>1. はじめに</h1>
+<p>
+この記事は<a ref="http://atnd.org/events/33927">F# Advent Calendar 2012</a> の3日目の記事です.
+</p>
+<p>
+(勢いで参加申し込みしてしまいましたが, 1日目, 2日目の記事を見て若干後悔しています...
+普段 blog とかやってないので, こんな感じの体裁, 内容になってしまってますが, お許しください.)
+</p>
+<p>
+内容は, 表題のとおり, F# + Excel-DNA</a> + R.NET
+を使った環境構築についてです.
+似たような内容については以下のサイトなどですでに取り扱われています.
+<ul>
+  <li><a href="http://supermab.com/wp/excel-dna-%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%A6%E3%81%BF%E3%82%8B%E3%81%9D%E3%81%AE%EF%BC%91/">C# + ExcelDna</a> (supermab さん)</li>
+  <li><a href="http://d.hatena.ne.jp/teramonagi/20120310/1331352798">C# + ExcelDna + R.NET</a> (teramonagi さん, 一部 F# + ExcelDna を含む)</li>
+</ul>
+このような状況の中で, F# + ExcelDna + R.NET という組み合わせの記事がちょっと検索して見つからなかったので,
+今回自分で書いてみることにしました.
+</p>
+
+<h1>2. なぜ F#, Excel-DNA, R か?</h1>
+<h2>2.1 Excel-DNA</h2>
+<p>
+<ul>
+  <li>日常業務ではやっぱり Excel (クウォンツっぽいこともしているものの, やっぱり一番使うのは Excel)</li>
+  <li>ちょっと複雑なことをしたいときは VBA</li>
+  <li>VBA に慣れてくるともうちょっと複雑なこともしたいが, 言語の制約に悩まされることも多い</li>
+  <li>VBA だとバージョン管理とか困難</li>
+</ul>
+Excel-DNA を使えば .NET 系の言語が手軽に Excel で使えて, バージョン管理もできそう.
+</p>
+<h2>2.2 F#</h2>
+<p>
+(プログラミングが専門ではないので, 素人の印象ですが...)
+<ul>
+  <li>型推論してくれるので便利</li>
+  <li>関数が 1st クラスオブジェクトというは数値計算のロジックなどを実装するときに意外と楽</li>
+  <li>対話環境があるので気軽に試せる</li>
+</ul>
+というわけで, C# よりは F# を使いたい.
+</p>
+<h2>2.3 R</h2>
+<p>
+<ul>
+  <li>実はF#には既存の数値計算ライブラリがいろいろある
+  (<a href="http://msdn.microsoft.com/en-us/library/hh304368(v=vs.100).aspx">こちら</a>など)</li>
+  <li>ただ, どれも開発途上で R ほど網羅的ではない印象</li>
+  <li>同じ機能がいろいろなライブラリに散らばっていたりして, どれを使うか悩む</li>
+</ul>
+とりあえずは, R の機能を使っておけばあまり本質的でないことに悩まずに済みそう
+(ただし, F#の機能をフルに使うならF#用に作成されたライブラリの方がいいのかもしれない, とも悩む...)
+</p>
+
+<h1>3. 今回の環境</h1>
+<p>
+今回の内容は windows xp (32bit) で試してます.
+<ul>
+  <li><a href="http://www.microsoft.com/ja-jp/download/details.aspx?id=115">Microsoft Visual Studio 2010 shell (integrated)</a></li>
+  <li><a href="http://www.microsoft.com/en-us/download/details.aspx?id=11100">F# CTP</a></li>
+  <li><a href="http://exceldna.codeplex.com/">Excel-DNA 0.29</a></li>
+  <li><a href="http://rdotnet.codeplex.com/">R.NET 1.4</a></li>
+  <li><a href="http://cran.r-project.org/">R 2.15.2</a></li>
+</ul>
+R のインストール時のオプションでは「バージョン番号をレジストリに保存する」を選んでいます.
+また, R のインストール後, "c:/Program Files/R/R-2.15.2/bin/i386/Rlapack.dll" を
+"c:/Program Files/R/R-2.15.2/library/stats/libs/i386/" 以下にコピーしています.
+環境によってはこれをやらないと R.NET からうまく R を扱えないようです.
+(最新版の R.NET を使用すると回避できる場合もあるという
+<a href="http://rdotnet.codeplex.com/discussions/353957">話</a>
+ですが, 完全ではないようです.)
+</p>
+
+<h1>4. 設定など</h1>
+<h2>4.1 F# (プロジェクトの作成)</h2>
+<p>
+Excel-DNA では, 普通のテキストファイル(dna ファイル)にプログラムを書くことができますが,
+それだと intellisense が使えないので, ここでは dna ファイルから Visual Studio で作成した
+dll を呼び出すことにします(詳しい設定は下記参照).
+</p>
+<p>
+したがって, Visual Studio については通常どおりメニューから
+[ファイル]-[新規作成]-[プロジェクト]-[F# Library] を選びます.
+また, プロジェクトの名前は sample にします.
+</p>
+<h2>4.2 Excel-DNA (ファイルの準備)</h2>
+<p>
+本体の Excel ファイルや Excel-DNA 関連のファイルを準備します.
+Visual Studio の Build Events を設定すればいろいろ自動的にできそうですが,
+ここでは単純に dll が作成される "... bin/Debug/" 以下にファイルを準備することにします.
+</p>
+<p>
+"... /bin/Debug/" 以下に準備(コピー)するファイル
+<ul>
+  <li>sample.xlsx<br />
+  (今回作成する dll の関数を使用する Excel ファイル, 名前は何でも良い, 新規作成)</li>
+  <li>ExcelDna.dna<br />
+  (いわゆる dna ファイル, 新規作成, 通常は適当に名前を変更しますが, 今回はデフォルトのまま使用することにします, 内容は下記参照)
+  <li>ExcelDna.xll<br />
+  (Excel-DNA の配布物よりコピー, 通常は dna ファイルに合わせて適当に名前を変更しますが, 今回はそのまま使用することにします)</li>
+</ul>
+ExcelDna.dna ファイルの内容は以下のようにします.
+</p>
+
+<script src="https://gist.github.com/4187702.js?file=sample.dna"></script>
+
+<p>
+Visual Studio で作成される dll の名前に応じて Path のところを適当に変えてください.
+また, 設定項目については
+<a href="http://exceldna.codeplex.com/wikipage?title=.dna%20Configuration%20File&referringTitle=Documentation">こちら</a>
+を参照してください.
+</p>
+
+<h2>4.3 Excel-DNA and R.NET (Visual Studio の参照設定)</h2>
+<p>
+R.NET.dll と ExcelDna.Integration.dll に参照設定します.
+</p>
+
+<h1>5. プログラムの作成</h1>
+<p>
+いよいよプログラムを作成します.
+</p>
+
+<p>
+今回は正規分布とt分布に従う乱数を返す関数と, 正規性の検定として Shapiro-Wilk 検定を行う関数を実装してみます.
+(といっても R の関数を呼ぶだけですが...)
+</p>
+
+
+
+</body>
+
+</html>
+

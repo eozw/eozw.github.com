@@ -1,0 +1,51 @@
+@charset "utf-8";
+
+body{
+  font-size:10pt;
+  font-family:'Lucida Sans Unicode',sans-serif;
+  margin-left:auto;
+  margin-right:auto;
+  width:95%;
+}
+
+#title{
+  text-align:center;
+  font-weight:bold;
+  font-size:12pt;
+}
+#author{
+  text-align:center;
+  font-size:10pt;
+}
+#date{
+  text-align:center;
+  font-size:10pt;
+}
+
+#abst_title{
+  text-align:center;
+  font-weight:bold;
+  font-size:10pt;
+}
+#abstract{
+  margin-left:auto;
+  margin-right:auto;
+  width:70%;
+}
+
+h1{
+  font-weight:bold;
+  font-size:12pt;
+}
+h2{
+  font-weight:bold;
+  font-size:11pt;
+}
+h3{
+  font-weight:bold;
+  font-size:10.5pt;
+}
+h4{
+  font-weight:bold;
+  font-size:10pt;
+}
