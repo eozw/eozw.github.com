@@ -56,6 +56,7 @@ Excel-DNA を使えば .NET 系の言語が手軽に Excel で使えて, バー�
 <h2>2.3 R</h2>
 <p>
 <ul>
+  <li>VBA で厳しいときは R</li>
   <li>実はF#には既存の数値計算ライブラリがいろいろある
   (<a href="http://msdn.microsoft.com/en-us/library/hh304368(v=vs.100).aspx">こちら</a>など)</li>
   <li>ただ, どれも開発途上で R ほど網羅的ではない印象</li>
@@ -76,8 +77,11 @@ Excel-DNA を使えば .NET 系の言語が手軽に Excel で使えて, バー�
   <li><a href="http://cran.r-project.org/">R 2.15.2</a></li>
 </ul>
 R のインストール時のオプションでは「バージョン番号をレジストリに保存する」を選んでいます.
-また, R のインストール後, "c:/Program Files/R/R-2.15.2/bin/i386/Rlapack.dll" を
-"c:/Program Files/R/R-2.15.2/library/stats/libs/i386/" 以下にコピーしています.
+</p>
+<p><img src="FsAdventCalender2012/install_r_registry.PNG" /></p>
+<p>
+<font color="red">また, R のインストール後, "c:/Program Files/R/R-2.15.2/bin/i386/Rlapack.dll" を
+  "c:/Program Files/R/R-2.15.2/library/stats/libs/i386/" 以下にコピーしています.</font>
 環境によってはこれをやらないと R.NET からうまく R を扱えないようです.
 (最新版の R.NET を使用すると回避できる場合もあるという
 <a href="http://rdotnet.codeplex.com/discussions/353957">話</a>
@@ -131,15 +135,109 @@ R.NET.dll と ExcelDna.Integration.dll に参照設定します.
 
 <h1>5. プログラムの作成</h1>
 <p>
-いよいよプログラムを作成します.
+いよいよプログラムを作成します (適当に勘でやっているので, 不備があったら教えていただけると助かります).
 </p>
-
 <p>
 今回は正規分布とt分布に従う乱数を返す関数と, 正規性の検定として Shapiro-Wilk 検定を行う関数を実装してみます.
 (といっても R の関数を呼ぶだけですが...)
 </p>
 
+<script src="https://gist.github.com/4187978.js?file=Module1.fs"></script>
 
+<p>
+最初のコメントにあるように R のインストールディレクトリを直接指定した方が簡単ですが, R のバージョンアップのときのことを考えて, レジストリを見に行くようにしています (R のインストール時にレジストリに登録してないと動きません).
+また, rengine は mutable にしないといけないようです.
+</p>
+<p>
+また, R からの戻り値(AsNumeric()の結果)は Seq になるようなので,
+配列に変換しています.
+</p>
+<p>
+プログラムを作成したら, 構成を Debug にしてコンパイルします.
+</p>
+
+<h1>6. Excel からの呼び出し</h1>
+<ol>
+  <li>"... /bin/Debug/" に上で作成した sample.xlsx を起動</li>
+  <li>ExcelDna.xll を sample.xlsx 上にドラッグアンドドロップ</li>
+  <li>後は作成した関数を使って好きなようにシートを加工する</li>
+</ol>
+<p>
+参考までに上で作成した関数の使用例を示します.
+</p>
+<p>
+まずは R_rnorm の使い方:
+</p>
+<p><img src="FsAdventCalender2012/excel_rnorm.PNG" /></p>
+<p>
+F# から配列を返す時には, Excel 上では配列数式を使って結果を受け取ります.
+F# から1次元配列を返すと Excel 上では行ベクトルになるので,
+列ベクトルが欲しいときは例のように transpose してやります.
+どうしても最初から列ベクトルが欲しい場合は
+<a href="http://exceldna.codeplex.com/wikipage?title=Returning%201-D%20Arrays&referringTitle=Documentation">こちら</a>
+を参照してください.
+</p>
+<p>
+次に Shapiro-Wilk 検定の使い方:
+</p>
+<p><img src="FsAdventCalender2012/excel_shapiro_test.PNG" /></p>
+<p>
+例のようにセル範囲を引数に渡すこともできます.
+Shapiro-Wilk 検定の結果は正規分布からサンプリングした rnorm が受容
+(p値が大きいので「正規分布でないとは言えない」),
+自由度6のt分布からサンプリングした rt が棄却
+(p値が小さいので「正規分布とはいえない」)
+されており, 妥当な結果になってます.
+</p>
+
+<h1>7. R type provider</h1>
+<p>
+これまでの話は F# 2.0 の範囲の話でした.
+今では F# 3.0 がリリースされ,
+さらに便利になっています.
+具体的には 3.0 から導入された type provider を使って,
+よりシームレスに F# から R を使用できるようになりました.
+機会があればまた紹介したいと思いますが,
+まだ詳しく見れてないので, さわりだけご紹介します.
+</p>
+<p><a href="http://techblog.bluemountaincapital.com/2012/08/01/announcing-the-f-r-type-provider/">R type provider</a></p>
+<p>
+配布物に含まれるサンプルを Microsoft Visual Studio Express 2012 for Web で開いたところ:
+</p>
+<p><img src="FsAdventCalender2012/rprovider_example.png" /></p>
+<p>
+よく見ると "R" というオブジェクトがあって,
+intellisense が効いてます.
+下の方のにある let msft = getStockPrice "MSFT" 255 |&gt; R.log |&gt; R.diff のところとか, たいへんすっきり書けているのがわかります.
+</p>
+
+<p><strong><font color="blue">Awesome!!</font></strong></p>
+
+<p>
+(おっと興奮して, Haskell の人みたいになってしまいました)
+</p>
+<p>
+ちなみに, このサンプルプログラムを実行すると, こんな感じです.
+(一部 us yahoo で取得できなくなっているデータがあったので,
+その分を除いてあります.)
+</p>
+<p><img src="FsAdventCalender2012/msft_adf.png" /></p>
+<p><img src="FsAdventCalender2012/correlation.png" /></p>
+
+<h1>8. まとめ</h1>
+<p>
+F# + Excel-DNA + R.NET の環境構築の紹介をしました.
+現状でもそれなりに便利で, これまで, 資料を作るのに Excel と
+R を行ったり来たりして苦労していたのがある程度楽になりそうです.
+さらに F# 3.0 で導入された type provider を使用すれば,
+F# 上での R の操作も格段に便利になりそうですが,
+Excel-DNA とうまく組み合わせられるかどうかについては
+これから試してみたいと思っています.
+</p>
+<p>
+というわけで, 明日は kos59125 さんです.
+お楽しみに!!
+</p>
 
 </body>
 
