@@ -1,0 +1,81 @@
+@charset "utf-8";
+body{
+	font-family:'Open Sans','メイリオ','meiryo',sans-serif;
+	font-size:12pt;
+	color:#666666;
+	/*background:lightyellow;*/
+	margin:24pt;
+}
+h1{
+	font-size:18pt;
+	text-align:center;
+}
+h2{
+	font-size:14pt;
+}
+h3{
+	font-size:12pt;
+}
+div.hst{
+	font-size:9pt;
+}/*
+pre{
+	background:#eeeeff;
+	border-style:solid;
+	border-width:1px;
+	border-color:#6666cc;
+	font-size:10pt;
+	font-family:"Lucida Console", monospace;
+	margin:0pt 12pt;
+	padding:6pt;
+}*/
+.hljs{
+	/*background:#eeeeff;*/
+/*	border-style:solid;
+	border-width:1px;
+	border-color:#6666cc;*/
+	/*font-size:10pt;
+	font-family:"Lucida Console", monospace;*/
+/*	margin:0pt 12pt;
+	padding:6pt;*/
+}
+.hljs-line-numbers {
+    text-align: right;
+    border-right: 1px solid #ccc;
+    color: #999;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}/*
+.MathJax {
+  font-size: 12pt;
+}*/
+dl{
+	margin:0pt 12pt;
+	padding:6pt;
+}
+dt{
+	text-decoration:underline;
+}
+table{
+	border-collapse:collapse;
+	border:1px solid #6666cc;
+}
+th{
+	padding:0 0.5em;
+	background: #eeeeff;
+	border:1px solid #6666cc;
+}
+td{
+	padding:0 0.5em;
+	border:1px solid #6666cc;
+}
+a{
+	text-decoration:none;
+}
+a:hover{
+	text-decoration:underline;
+}
